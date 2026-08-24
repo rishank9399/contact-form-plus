@@ -85,25 +85,31 @@ function Index() {
   );
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-    const { name, value } = e.target;
+    const { name, value } = e.target as { name: FieldName; value: string };
     setFormData((prev) => ({ ...prev, [name]: value }));
     if (touched[name]) {
-      setErrors((prev) => ({ ...prev, [name]: validateField(name as keyof typeof formData, value) }));
+      setErrors((prev) => ({
+        ...prev,
+        [name]: validateField(name as keyof typeof formData, value),
+      }));
     }
   };
 
   const handlePhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value.replace(/\D/g, "").slice(0, 10);
     setFormData((prev) => ({ ...prev, phone: value }));
-    if (touched.phone) {
+    if (touched["phone"]) {
       setErrors((prev) => ({ ...prev, phone: validateField("phone", value) }));
     }
   };
 
   const handleBlur = (e: React.FocusEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-    const { name, value } = e.target;
+    const { name, value } = e.target as { name: FieldName; value: string };
     setTouched((prev) => ({ ...prev, [name]: true }));
-    setErrors((prev) => ({ ...prev, [name]: validateField(name as keyof typeof formData, value) }));
+    setErrors((prev) => ({
+      ...prev,
+      [name]: validateField(name as keyof typeof formData, value),
+    }));
   };
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
