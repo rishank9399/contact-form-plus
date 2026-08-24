@@ -1,5 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useState, useRef, useCallback, useEffect } from "react";
+import { supabase } from "@/integrations/supabase/client";
+
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -42,7 +44,10 @@ function Index() {
   const [errors, setErrors] = useState<Partial<Record<FieldName, string>>>({});
   const [touched, setTouched] = useState<Partial<Record<FieldName, boolean>>>({});
   const [isSubmitted, setIsSubmitted] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState("");
   const fileInputRef = useRef<HTMLInputElement>(null);
+
 
   const validateField = useCallback(
     (name: keyof typeof formData, value: string) => {
@@ -133,7 +138,7 @@ function Index() {
     }
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     const newErrors: Partial<Record<FieldName, string>> = {};
     (Object.keys(formData) as Array<keyof typeof formData>).forEach((key) => {
@@ -155,10 +160,39 @@ function Index() {
       captchaInput: true,
     });
 
-    if (Object.keys(newErrors).length === 0) {
+    if (Object.keys(newErrors).length > 0 || !attachment) return;
+
+    setSubmitError("");
+    setIsSubmitting(true);
+    try {
+      const ext = attachment.name.split(".").pop()?.toLowerCase() ?? "doc";
+      const path = `${crypto.randomUUID()}.${ext}`;
+      const { error: uploadError } = await supabase.storage
+        .from("application-attachments")
+        .upload(path, attachment, { contentType: attachment.type || undefined });
+      if (uploadError) throw uploadError;
+
+      const { error: insertError } = await supabase.from("applications").insert({
+        name: formData.name.trim(),
+        phone: formData.phone,
+        email1: formData.email1.trim(),
+        email2: formData.email2.trim(),
+        address: formData.address.trim(),
+        attachment_path: path,
+        attachment_name: attachment.name,
+      });
+      if (insertError) throw insertError;
+
       setIsSubmitted(true);
+    } catch (err) {
+      setSubmitError(
+        err instanceof Error ? err.message : "Something went wrong. Please try again."
+      );
+    } finally {
+      setIsSubmitting(false);
     }
   };
+
 
   const refreshCaptcha = () => {
     setCaptcha(generateCaptcha());
