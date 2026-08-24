@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useState, useRef, useCallback } from "react";
+import { useState, useRef, useCallback, useEffect } from "react";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -34,7 +34,10 @@ function Index() {
     captchaInput: "",
   });
   const [attachment, setAttachment] = useState<File | null>(null);
-  const [captcha, setCaptcha] = useState(generateCaptcha);
+  const [captcha, setCaptcha] = useState("");
+  useEffect(() => {
+    setCaptcha(generateCaptcha());
+  }, []);
   type FieldName = keyof typeof formData | "attachment";
   const [errors, setErrors] = useState<Partial<Record<FieldName, string>>>({});
   const [touched, setTouched] = useState<Partial<Record<FieldName, boolean>>>({});
