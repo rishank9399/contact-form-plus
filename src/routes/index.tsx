@@ -132,14 +132,14 @@ function Index() {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    const newErrors: Record<string, string> = {};
+    const newErrors: Partial<Record<FieldName, string>> = {};
     (Object.keys(formData) as Array<keyof typeof formData>).forEach((key) => {
       const error = validateField(key, formData[key]);
       if (error) newErrors[key] = error;
     });
 
     if (!attachment) {
-      newErrors.attachment = "Attachment is required";
+      newErrors["attachment"] = "Attachment is required";
     }
 
     setErrors(newErrors);
