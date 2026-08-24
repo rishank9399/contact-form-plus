@@ -35,8 +35,9 @@ function Index() {
   });
   const [attachment, setAttachment] = useState<File | null>(null);
   const [captcha, setCaptcha] = useState(generateCaptcha);
-  const [errors, setErrors] = useState<Record<string, string>>({});
-  const [touched, setTouched] = useState<Record<string, boolean>>({});
+  type FieldName = keyof typeof formData | "attachment";
+  const [errors, setErrors] = useState<Partial<Record<FieldName, string>>>({});
+  const [touched, setTouched] = useState<Partial<Record<FieldName, boolean>>>({});
   const [isSubmitted, setIsSubmitted] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
